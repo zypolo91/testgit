@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "experimentalDecorators": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "removeComments": true,
+    "pretty": true,
+    "lib": ["es6"],
+    "declaration": true,
+    "declarationDir": "./dist/types/"
+  },
+  "include": ["src"]
+}
