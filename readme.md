@@ -3,10 +3,10 @@
     git init
 
 #### 2.安装mrm及mrm任务
-    npm i mrm mrm-task-gitignore mrm-task-typescript mrm-task-prettier mrm-task-eslint mrm-task-lint-staged -D()
+    npm i mrm mrm-task-gitignore mrm-task-typescript mrm-task-prettier mrm-task-eslint mrm-task-lint-staged mrm-task-license mrm-task-contributing  -D
 
 #### 3.执行mrm任务
-    npx mrm gitignore typescript prettier eslint lint-staged 
+    npx mrm gitignore license contributing typescript prettier eslint lint-staged 
 
     gitignore任务 ->创建.gitignore
     typescript任务 ->安装typescript并创建tsconfig.json
@@ -84,6 +84,70 @@
 ```json
 {}
 ```
+* 修改contributing.md(按自己需求)
+```md
+## CONTRIBUTING.md
+
+* [Bug反馈](#bug)
+
+* [Pull Request流程图示](#pull)
+
+
+<h3 id="bug">Bug反馈</h3>
+
+1.提交途径
+
+* 推荐使用issue,
+
+  >  简单，拖拽即可上传截图，方便反馈存档，利于帮助其他存在问题的人，避免重复问题
+
+ 2.提交内容
+
+针对存在问题反馈不够明确，建议提交包含以下内容，目前提供了一个[在线模板可供参考](https://github.com/zypolo91/testgit/issues/new?title=Bug:%20&body=**%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0**%0A%EF%BC%88%E6%8F%8F%E8%BF%B0%E4%B8%80%E4%B8%8B%E9%97%AE%E9%A2%98%EF%BC%89%0A%0A**%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83**%20%0A-%20%E6%B5%8F%E8%A7%88%E5%99%A8%E5%8F%8A%E7%89%88%E6%9C%AC%EF%BC%9A%20%0A-%20%E6%BC%94%E7%A4%BA%E5%9C%B0%E5%9D%80:%20%0A-%20%E6%B5%8F%E8%A7%88%E5%99%A8%E6%8A%A5%E9%94%99:%20%0A-%20%E6%88%AA%E5%9B%BE:)，个人填写建议包含以下内容:
+
+```
+**问题描述**
+（描述一下问题）
+
+**生产环境** 
+- 浏览器及版本： 
+- 演示地址: 
+- 浏览器报错: 
+- 截图:
+```
+
+<h3 id="pull">Pull Request流程图示</h3>
+
+以 [testgit](https://github.com/zypolo91/testgit) 仓库为例：
+
+1. Fork仓库到个人Respository目录：进入仓库，点击`Fork`
+
+2. Clone到本地
+
+   ```
+   $ git clone git@github.com:zypolo91/testgit.git
+   ```
+
+3. 创建分支
+
+   ```
+   $ git checkout -b fixer
+   ```
+
+4. 修改后提交
+
+   ```
+   $ git add .
+   $ git commit -m "fix:some bug"
+   $ git push origin fixer
+   ```
+
+5. 提交`pull request`:登陆github,进入`fork`后的仓库，切换到新提交的`fixer`分支，点击右侧绿色按钮`Compare& pull request`
+
+6. 添加注释信息，确认提交
+
+```
+
 #### 5.安装commitlint,(用于校验git commit信息)
     npm i @commitlint/cli @commitlint/config-conventional -D 
 
@@ -152,7 +216,7 @@ module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
     verbose: true,
-    roots: ['<rootDir>/test/'],
+    roots: ['<rootDir>/tests/'],
     testURL: 'http://localhost/',
     globals: {
         'ts-jest': {
@@ -160,7 +224,7 @@ module.exports = {
         isolatedModules: true,
         },
     },
-    coveragePathIgnorePatterns: ['/node_modules/', '/test/helpers/'],
+    coveragePathIgnorePatterns: ['/node_modules/', '/tests/helpers/'],
     coverageDirectory: './coverage/',
     collectCoverage: true,
 };
@@ -186,6 +250,14 @@ module.exports = {
     ],
     "types": "dist/types/index.d.ts",
     "sideEffects": false,
+    "bugs": {
+        "url": "https://github.com/zypolo91/testgit/issues"
+    },
+    "homepage": "https://github.com/zypolo91/testgit#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/zypolo91/testgit.git"
+    },
     ...
     "scripts": {
         "build": "rollup -c ./rollup.config.js",
@@ -242,6 +314,85 @@ plugins: [
 };
 ```
 
+#### 14. 加入ci支持(利用github action)
+    创建.github/workflows文件夹
+    创建build.yaml文件(push/pr时自动运行校验，测试，打包)
+```yaml
+name: Build-CI
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: lint & test & build
+        run: |
+          npm install
+          npm run lint
+          npm run test
+          npm run build
+```
+    创建release.yaml文件(推送tag时创建)
+```yaml
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  tag:
+    name: Create release tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node 
+        uses: actions/setup-node@v2
+        with: 
+          node-version: '14'
+      - name: Generate changelog
+        run: |
+          npm install
+          npm run release
+      - name: Create release tag
+        id: release_tag
+        uses: yyx990803/release-tag@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          body: |
+            [CHANGELOG.md](https://github.com/${{github.repository}}/blob/master/CHANGELOG.md)
+      
+  publish-npm:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    needs: tag
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Build & publish
+        run: |
+          npm install
+          npm run build
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+```
 
 --- 可选 ---
 #### 安装commitizen使用git cz格式化提交消息
@@ -285,8 +436,10 @@ ts-git-template
     "docs:build": "vuepress build docs && cp -rf ./docs/.vuepress/dist/* ./docs && rm -r ./docs/.vuepress/dist"
 }
 ```
+* 添加.npmignore加入docs/
+  
 * 运行npm run docs
 
 #### 文档上传自动显示Github Page
-![Github Page](https://zebra-common-system-pre.oss-cn-shanghai.aliyuncs.com/bmdev/6391f365-c15c-4cce-b833-9e1116111a72.png
+![Github Page](./gitpage.png
 )

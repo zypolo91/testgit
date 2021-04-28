@@ -3,17 +3,17 @@ name: Build-CI
 on: [push, pull_request]
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: checkout code
         uses: actions/checkout@v2
-      - name: Setup node
+      - name: setup node
         uses: actions/setup-node@v2
         with:
           node-version: '14'
-      - name: Build & test
+      - name: lint & test & build
         run: |
           npm install
           npm run lint
