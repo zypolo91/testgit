@@ -1,8 +1,5 @@
 {
   "header": "Changelog",
-  "skip": {
-    "tag": true
-  },
   "types": [
     { "type": "feat", "section": "新特性" },
     { "type": "fix", "section": "Bug修复" },
